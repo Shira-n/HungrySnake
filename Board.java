@@ -3,6 +3,7 @@ package sample;
 
 import javafx.application.Platform;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -25,11 +26,14 @@ public class Board {
     private int[] x_snake = new int[BOARD_HEIGHT * BOARD_WIDTH];
     private int[] y_snake = new int[BOARD_HEIGHT * BOARD_WIDTH];
 
+    private ArrayList<int[]> _fruits= new ArrayList<>();
     private int[] x_fruit = new int[DEFAULT_FRUIT_NUM];
     private int[] y_fruit = new int[DEFAULT_FRUIT_NUM];
 
     private Timer _timer;
     private int _speed;  //snake movement in millisecond;
+
+    private int _score;
 
     private Direction _direction;
 
@@ -41,7 +45,7 @@ public class Board {
         _direction = DEFAULT_START_DIRECTION;
 
         initialiseSnake();
-        initialiseFruit();
+        plantFruit();
 
         setUpTimer();
     }
@@ -56,13 +60,6 @@ public class Board {
 
         paintSnake();
         System.out.println("initialise snake");
-    }
-
-    private void initialiseFruit() {
-        while (_fruitNum < DEFAULT_FRUIT_NUM){
-            plantFruit();
-            _fruitNum++;
-        }
     }
 
     private void paintSnake() {
@@ -83,14 +80,14 @@ public class Board {
     }
 
     private void plantFruit() {
-        int x_pos = (int)(Math.random() * BOARD_WIDTH);
-        int y_pos = (int)(Math.random() * BOARD_HEIGHT);
-
-        x_fruit[_fruitNum] = x_pos;
-        y_fruit[_fruitNum] = y_pos;
-
-        _controller.paintFruit(x_pos, y_pos);
-        System.out.println("plant fruit");
+        while (_fruits.size() < DEFAULT_FRUIT_NUM){
+            int[] pos = {(int)(Math.round((Math.random() * BOARD_WIDTH)/10.0)*10.0),(int)(Math.round((Math.random() * BOARD_HEIGHT)/10.0)*10.0)};
+            _fruits.add(pos);
+            //x_fruit[_fruitNum] = x_pos;
+            //y_fruit[_fruitNum] = y_pos;
+            //_fruitNum++;
+        }
+        _controller.paintFruit(_fruits);
     }
 
     private void moveSnake() {
@@ -103,8 +100,30 @@ public class Board {
         x_snake[0] = x_snake[0]+_direction.getX();
         y_snake[0] = y_snake[0]+_direction.getY();
 
+        checkHitWall();
+
         _controller.clear();
         paintSnake();
+
+        checkFruit();
+        checkGameOver();
+    }
+
+    private void checkHitWall() {
+        for (int i = 0; i< _snakeLength; i++) {
+            if (x_snake[i]>BOARD_WIDTH) {
+                x_snake[i]=0;
+            }
+            else if(x_snake[i]<0) {
+                x_snake[i]=BOARD_WIDTH;
+            }
+            else if(y_snake[i]>BOARD_HEIGHT) {
+                y_snake[i]=0;
+            }
+            else if(y_snake[i]<0){
+                y_snake[i]=BOARD_HEIGHT;
+            }
+        }
     }
 
     private void setUpTimer() {
@@ -114,20 +133,39 @@ public class Board {
             public void run() {
                 Platform.runLater(() -> {
                     moveSnake();
-                    System.out.println("timer");
+                    System.out.println("timer " + _speed);
+                    setUpTimer();
                 });
             }
         };
 
-        TimerTask increaseSpeed = new TimerTask() {
-            public void run() {
-                _speed = _speed - 500;
-            }
-        };
-
-        _timer.scheduleAtFixedRate(updateSnake, 0,_speed);
-        _timer.scheduleAtFixedRate(increaseSpeed,0,7001);
+        _timer.schedule(updateSnake, _speed);
     }
+
+    private void checkFruit() {
+        for (int i = 0; i < _fruits.size(); i++) {
+            if (_fruits.get(i)[0] == x_snake[0] && _fruits.get(i)[1] == y_snake[0]) {
+                _fruits.remove(i);
+                plantFruit();
+                _score ++;
+                if (_speed > 80) {
+                    _speed = _speed -50;
+                }
+                increaseSnakeLength();
+            }
+        }
+    }
+
+    private void increaseSnakeLength() {
+        x_snake[_snakeLength] = x_snake[_snakeLength-1]+_direction.getX();
+        y_snake[_snakeLength] = y_snake[_snakeLength-1]+_direction.getY();
+        _snakeLength++;
+    }
+    private void checkGameOver() {
+        if (x_snake[0]==0 || x_snake[0]==BOARD_WIDTH){}
+
+    }
+
     public void setDirection(Direction direction) {
         _direction = direction;
     }

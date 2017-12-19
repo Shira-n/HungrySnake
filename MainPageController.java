@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class MainPageController {
 
     private ArrayList<Circle> _previousTail = new ArrayList<Circle>();
+    private ArrayList<Circle> _fruits = new ArrayList<Circle>();
 
     @FXML
     private Button _button;
@@ -95,10 +96,17 @@ public class MainPageController {
     }
 
     @FXML
-    public void paintFruit(int x, int y) {
-        Circle circle = new Circle(x, y,3);
-        circle.setFill(Color.RED);
-        _pane.getChildren().add(circle);
+    public void paintFruit(ArrayList<int[]> fruits) {
+        for (Circle c: _fruits) {
+            _pane.getChildren().remove(c);
+        }
+        _fruits = new ArrayList<Circle>();
+        for(int i = 0; i < fruits.size(); i++) {
+            Circle circle = new Circle(fruits.get(i)[0],fruits.get(i)[1],3);
+            circle.setFill(Color.RED);
+            _pane.getChildren().add(circle);
+            _fruits.add(circle);
+        }
     }
 
     @FXML
