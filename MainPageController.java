@@ -26,6 +26,8 @@ public class MainPageController {
 
     private Board _board;
 
+    private Direction _currentDirection;
+
     @FXML
     public void initialize() {
         _board = new Board(this);
@@ -35,16 +37,16 @@ public class MainPageController {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode() == KeyCode.UP) {
-                    _board.setDirection(Direction.UP);
+                    _currentDirection = Direction.UP;
                 }
                 else if (event.getCode() == KeyCode.DOWN) {
-                    _board.setDirection(Direction.DOWN);
+                    _currentDirection = Direction.DOWN;
                 }
                 else if(event.getCode() == KeyCode.RIGHT) {
-                    _board.setDirection(Direction.RIGHT);
+                    _currentDirection = Direction.RIGHT;
                 }
                 else if (event.getCode() == KeyCode.LEFT) {
-                    _board.setDirection(Direction.LEFT);
+                    _currentDirection = Direction.LEFT;
                 }
             }
         });
@@ -53,23 +55,6 @@ public class MainPageController {
 
     }
 
-    @FXML
-    public void handleKeyPressed(KeyEvent event) {
-        if(event.getCode() == KeyCode.UP) {
-            _board.setDirection(Direction.UP);
-            System.out.println("UP");
-        }
-        else if (event.getCode() == KeyCode.DOWN) {
-            _board.setDirection(Direction.DOWN);
-        }
-        else if(event.getCode() == KeyCode.RIGHT) {
-           _board.setDirection(Direction.RIGHT);
-        }
-        else if (event.getCode() == KeyCode.LEFT) {
-            _board.setDirection(Direction.LEFT);
-        }
-        event.consume();
-    }
 
     @FXML
     public void paintHead(int x, int y) {
@@ -114,6 +99,10 @@ public class MainPageController {
         for(Circle c: _previousTail){
             _pane.getChildren().remove(c);
         }
+    }
+
+    public Direction getDirection() {
+        return _currentDirection;
     }
 
 }

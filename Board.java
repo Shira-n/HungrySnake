@@ -35,6 +35,8 @@ public class Board {
 
     private int _score;
 
+    private boolean _gameOver = false;
+
     private Direction _direction;
 
     public Board(MainPageController controller) {
@@ -66,15 +68,15 @@ public class Board {
         for (int i = 0; i < _snakeLength; i++) {
             if(i == 0) {
                 _controller.paintHead(x_snake[0],y_snake[0]);
-                System.out.println("Head "+ x_snake[0]+ y_snake[0]);
+                //System.out.println("Head "+ x_snake[0]+ y_snake[0]);
             }
             else if (i == _snakeLength -1) {
                 _controller.paintTail(x_snake[i],y_snake[i]);
-                System.out.println("Tail "+ x_snake[i]+y_snake[i]);
+                //System.out.println("Tail "+ x_snake[i]+y_snake[i]);
             }
             else {
                 _controller.paintBody(x_snake[i],y_snake[i]);
-                System.out.println("Body "+ x_snake[i]+y_snake[i]);
+                //System.out.println("Body "+ x_snake[i]+y_snake[i]);
             }
         }
     }
@@ -91,7 +93,7 @@ public class Board {
     }
 
     private void moveSnake() {
-
+        setDirection();
 
         for(int i = _snakeLength; i > 0; i--) {
             x_snake[i] = x_snake[i-1];
@@ -101,10 +103,8 @@ public class Board {
         y_snake[0] = y_snake[0]+_direction.getY();
 
         checkHitWall();
-
         _controller.clear();
         paintSnake();
-
         checkFruit();
         checkGameOver();
     }
@@ -132,9 +132,11 @@ public class Board {
         TimerTask updateSnake = new TimerTask() {
             public void run() {
                 Platform.runLater(() -> {
-                    moveSnake();
-                    System.out.println("timer " + _speed);
-                    setUpTimer();
+                    if(!_gameOver){
+                        moveSnake();
+                        //System.out.println("timer " + _speed);
+                        setUpTimer();
+                    }
                 });
             }
         };
@@ -162,12 +164,26 @@ public class Board {
         _snakeLength++;
     }
     private void checkGameOver() {
-        if (x_snake[0]==0 || x_snake[0]==BOARD_WIDTH){}
+        for(int i =1; i<_snakeLength;i++){
+            if (x_snake[i]==x_snake[0] && y_snake[i]==y_snake[0]) {
+                _timer.cancel();
+                _gameOver = true;
+                System.out.println("Game Over");
+            }
+        }
+
 
     }
 
-    public void setDirection(Direction direction) {
-        _direction = direction;
+    public void setDirection() {
+        Direction direction = _controller.getDirection();
+        if ((direction == Direction.LEFT && _direction != Direction.RIGHT)
+            ||(direction == Direction.RIGHT && _direction != Direction.LEFT)
+                ||(direction == Direction.UP && _direction != Direction.DOWN)
+                ||(direction == Direction.DOWN && _direction != Direction.UP)){
+            _direction = direction;
+        }
+
     }
 }
 
