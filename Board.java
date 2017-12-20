@@ -15,7 +15,7 @@ public class Board {
     private final int[] DEFAULT_START_POINT = {200,200}; //default snake facing left;
     private final Direction DEFAULT_START_DIRECTION = Direction.LEFT;
     private final int DEFAULT_FRUIT_NUM = 5;
-    private final int START_SPEED = 500;
+    private final int START_SPEED = 400;
 
 
     private MainPageController _controller;
@@ -40,30 +40,38 @@ public class Board {
     private Direction _direction;
 
     public Board(MainPageController controller) {
+
+        //initialise values
         _controller = controller;
         _snakeLength = START_LENGTH;
         _fruitNum = 0;
         _speed = START_SPEED;
         _direction = DEFAULT_START_DIRECTION;
 
+        //draw snake at default starting point
         initialiseSnake();
+        //place fruits
         plantFruit();
-
+        //timer starts, snake starts moving
         setUpTimer();
     }
 
 
+    /**
+     * draw the snake at default starting point with default length
+     */
     private void initialiseSnake() {
         for(int i = _snakeLength; i>0; i--) {
-            System.out.println(""+_direction.getX());
             x_snake[i-1] = DEFAULT_START_POINT[0]-_direction.getX()*i;
             y_snake[i-1] = DEFAULT_START_POINT[1] -_direction.getY()*i;
         }
-
         paintSnake();
-        System.out.println("initialise snake");
     }
 
+
+    /*
+     * draw snake, method called every time snake is moved
+     */
     private void paintSnake() {
         for (int i = 0; i < _snakeLength; i++) {
             if(i == 0) {
@@ -81,20 +89,25 @@ public class Board {
         }
     }
 
+    /*
+     * method generates fruits until reaching the default number of fruits per game
+     */
     private void plantFruit() {
         while (_fruits.size() < DEFAULT_FRUIT_NUM){
             int[] pos = {(int)(Math.round((Math.random() * BOARD_WIDTH)/10.0)*10.0),(int)(Math.round((Math.random() * BOARD_HEIGHT)/10.0)*10.0)};
             _fruits.add(pos);
-            //x_fruit[_fruitNum] = x_pos;
-            //y_fruit[_fruitNum] = y_pos;
-            //_fruitNum++;
         }
         _controller.paintFruit(_fruits);
     }
 
+    /*
+     *moves the snake one position according to the direction user previously input, method called by timer
+     */
     private void moveSnake() {
+        //get user's last direction input
         setDirection();
 
+        //move snake
         for(int i = _snakeLength; i > 0; i--) {
             x_snake[i] = x_snake[i-1];
             y_snake[i] = y_snake[i-1];
@@ -102,39 +115,57 @@ public class Board {
         x_snake[0] = x_snake[0]+_direction.getX();
         y_snake[0] = y_snake[0]+_direction.getY();
 
+        //check if snake has hit wall, if so, "loop" snake to opposite wall
         checkHitWall();
+
+        //check if snake hit a fruit
+        checkFruit();
+
+        //draw snake at new position
         _controller.clear();
         paintSnake();
-        checkFruit();
+
+        //check if snake touched itself
         checkGameOver();
     }
 
+    /*
+     * Sends the snake to the opposite wall if snake hit a wall
+     */
     private void checkHitWall() {
         for (int i = 0; i< _snakeLength; i++) {
+            //hit right wall
             if (x_snake[i]>BOARD_WIDTH) {
                 x_snake[i]=0;
             }
+            //hit left wall
             else if(x_snake[i]<0) {
                 x_snake[i]=BOARD_WIDTH;
             }
+            //hit top wall
             else if(y_snake[i]>BOARD_HEIGHT) {
                 y_snake[i]=0;
             }
+            //hit bottom wall
             else if(y_snake[i]<0){
                 y_snake[i]=BOARD_HEIGHT;
             }
         }
     }
 
+    /*
+     *initialise timer used to control the velocity of the snake
+     */
     private void setUpTimer() {
         _timer = new Timer();
 
         TimerTask updateSnake = new TimerTask() {
             public void run() {
                 Platform.runLater(() -> {
+                    //generate a new move by the current snake speed if not game over
                     if(!_gameOver){
                         moveSnake();
-                        //System.out.println("timer " + _speed);
+                        //generate the next move
                         setUpTimer();
                     }
                 });
@@ -144,6 +175,9 @@ public class Board {
         _timer.schedule(updateSnake, _speed);
     }
 
+    /*
+     *check if snake has hit a fruit. If so, clear that fruit, plant a new one, and increase snake length by 1, increase snake speed
+     */
     private void checkFruit() {
         for (int i = 0; i < _fruits.size(); i++) {
             if (_fruits.get(i)[0] == x_snake[0] && _fruits.get(i)[1] == y_snake[0]) {
@@ -151,20 +185,28 @@ public class Board {
                 plantFruit();
                 _score ++;
                 if (_speed > 80) {
-                    _speed = _speed -50;
+                    _speed = _speed -30;
                 }
                 increaseSnakeLength();
             }
         }
     }
 
+    /*
+     *increases the snake length by 1. A new dot is added to the end of existing snake
+     */
     private void increaseSnakeLength() {
         x_snake[_snakeLength] = x_snake[_snakeLength-1]+_direction.getX();
         y_snake[_snakeLength] = y_snake[_snakeLength-1]+_direction.getY();
         _snakeLength++;
     }
+
+    /*
+     *game over if the snake touches itself
+     */
     private void checkGameOver() {
         for(int i =1; i<_snakeLength;i++){
+            //check if any body collides with its head
             if (x_snake[i]==x_snake[0] && y_snake[i]==y_snake[0]) {
                 _timer.cancel();
                 _gameOver = true;
@@ -175,6 +217,9 @@ public class Board {
 
     }
 
+    /*
+     *change the direction of the snake, cannot switch to opposite direction (eg. from going left to going right)
+     */
     public void setDirection() {
         Direction direction = _controller.getDirection();
         if ((direction == Direction.LEFT && _direction != Direction.RIGHT)

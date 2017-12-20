@@ -15,8 +15,8 @@ import java.util.ArrayList;
 
 public class MainPageController {
 
-    private ArrayList<Circle> _previousTail = new ArrayList<Circle>();
-    private ArrayList<Circle> _fruits = new ArrayList<Circle>();
+    private ArrayList<Circle> _previousTail = new ArrayList<Circle>(); //stores the position of the snake
+    private ArrayList<Circle> _fruits = new ArrayList<Circle>(); //stores the position of fruits
 
     @FXML
     private Button _button;
@@ -32,6 +32,7 @@ public class MainPageController {
     public void initialize() {
         _board = new Board(this);
 
+        //listens for keyboard input from user
         _button.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
             @Override
@@ -55,7 +56,9 @@ public class MainPageController {
 
     }
 
-
+    /*
+     * paint head
+     */
     @FXML
     public void paintHead(int x, int y) {
         Circle circle = new Circle(x, y,3);
@@ -64,6 +67,9 @@ public class MainPageController {
         _previousTail.add(circle);
     }
 
+    /*
+     *paint body
+     */
     @FXML
     public void paintBody(int x, int y) {
         Circle circle = new Circle(x, y,3);
@@ -72,6 +78,9 @@ public class MainPageController {
         _previousTail.add(circle);
     }
 
+    /*
+     *paint tail
+     */
     @FXML
     public void paintTail(int x, int y) {
         Circle circle = new Circle(x, y,3);
@@ -80,6 +89,9 @@ public class MainPageController {
         _previousTail.add(circle);
     }
 
+    /*
+     *paint fruits
+     */
     @FXML
     public void paintFruit(ArrayList<int[]> fruits) {
         for (Circle c: _fruits) {
